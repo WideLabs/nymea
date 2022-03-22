@@ -49,6 +49,7 @@ HEADERS += \
     network/networkdevicediscoveryreply.h \
     network/networkdeviceinfo.h \
     network/networkdeviceinfos.h \
+    network/networkdevicemonitor.h \
     network/networkutils.h \
     network/ping.h \
     network/pingreply.h \
@@ -154,6 +155,7 @@ SOURCES += \
     network/networkdevicediscoveryreply.cpp \
     network/networkdeviceinfo.cpp \
     network/networkdeviceinfos.cpp \
+    network/networkdevicemonitor.cpp \
     network/networkutils.cpp \
     network/ping.cpp \
     network/pingreply.cpp \

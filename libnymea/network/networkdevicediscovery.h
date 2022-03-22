@@ -37,6 +37,7 @@
 
 #include "ping.h"
 #include "libnymea.h"
+#include "networkdevicemonitor.h"
 #include "networkdevicediscoveryreply.h"
 
 class ArpSocket;
@@ -56,6 +57,11 @@ public:
     bool available() const;
     bool running() const;
 
+    NetworkDeviceMonitor *registerMonitor(const QString &macAddress);
+    void unregisterMonitor(const QString &macAddress);
+    void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor);
+
+
     PingReply *ping(const QHostAddress &address);
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
 
@@ -71,6 +77,8 @@ private:
     QTimer *m_discoveryTimer = nullptr;
     NetworkDeviceDiscoveryReply *m_currentReply = nullptr;
     QList<PingReply *> m_runningPingRepies;
+
+    QHash<QString, NetworkDeviceMonitor *> m_monitors;
 
     void pingAllNetworkDevices();
     void finishDiscovery();

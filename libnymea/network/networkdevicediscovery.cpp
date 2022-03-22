@@ -110,6 +110,28 @@ bool NetworkDeviceDiscovery::running() const
     return m_running;
 }
 
+NetworkDeviceMonitor *NetworkDeviceDiscovery::registerMonitor(const QString &macAddress)
+{
+    if (m_monitors.contains(macAddress))
+        return m_monitors.value(macAddress);
+
+    // TODO: check if we have a NetworkDeviceInfo for this mac address
+
+    NetworkDeviceMonitor *monitor = new NetworkDeviceMonitor(NetworkDeviceInfo(macAddress), this);
+    m_monitors.insert(macAddress, monitor);
+    return monitor;
+}
+
+void NetworkDeviceDiscovery::unregisterMonitor(const QString &macAddress)
+{
+
+}
+
+void NetworkDeviceDiscovery::unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor)
+{
+
+}
+
 PingReply *NetworkDeviceDiscovery::ping(const QHostAddress &address)
 {
     return m_ping->ping(address);
