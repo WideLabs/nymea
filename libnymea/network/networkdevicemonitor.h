@@ -51,6 +51,7 @@ public:
 
 signals:
     void reachableChanged(bool reachable);
+    void lastSeenChanged(const QDateTime &lastSeen);
     void networkDeviceInfoChanged(const NetworkDeviceInfo &networkDeviceInfo);
 
 private:
@@ -62,5 +63,8 @@ private:
     QDateTime m_lastSeen;
 
 };
+
+QDebug operator<<(QDebug debug, NetworkDeviceMonitor *networkDeviceMonitor);
+
 
 #endif // NETWORKDEVICEMONITOR_H

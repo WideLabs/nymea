@@ -51,3 +51,15 @@ NetworkDeviceMonitor::NetworkDeviceMonitor(const NetworkDeviceInfo &networkDevic
 {
 
 }
+
+QDebug operator<<(QDebug dbg, NetworkDeviceMonitor *networkDeviceMonitor)
+{
+    dbg.nospace() << "NetworkDeviceMonitor(" << networkDeviceMonitor->networkDeviceInfo().macAddress();
+
+    if (!networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer().isEmpty())
+        dbg.nospace() << " - " << networkDeviceMonitor->networkDeviceInfo().macAddressManufacturer();
+
+    dbg.nospace() << ")";
+    return dbg.maybeSpace();
+}
+

@@ -61,7 +61,6 @@ public:
     void unregisterMonitor(const QString &macAddress);
     void unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor);
 
-
     PingReply *ping(const QHostAddress &address);
     MacAddressDatabaseReply *lookupMacAddress(const QString &macAddress);
 
@@ -75,6 +74,7 @@ private:
     bool m_running = false;
 
     QTimer *m_discoveryTimer = nullptr;
+    QTimer *m_monitorTimer = nullptr;
     NetworkDeviceDiscoveryReply *m_currentReply = nullptr;
     QList<PingReply *> m_runningPingRepies;
 
@@ -86,7 +86,8 @@ private:
     void updateOrAddNetworkDeviceArp(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress, const QString &manufacturer = QString());
 
 private slots:
-    void onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
+    void onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress);
+    void evaluateMonitors();
 
 };
 

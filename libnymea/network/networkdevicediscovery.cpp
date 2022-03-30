@@ -43,7 +43,7 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
 {
     // Create ARP socket
     m_arpSocket = new ArpSocket(this);
-    connect(m_arpSocket, &ArpSocket::arpResponse, this, &NetworkDeviceDiscovery::onArpResponseRceived);
+    connect(m_arpSocket, &ArpSocket::arpResponse, this, &NetworkDeviceDiscovery::onArpResponseReceived);
     bool arpAvailable = m_arpSocket->openSocket();
     if (!arpAvailable) {
         m_arpSocket->closeSocket();
@@ -66,6 +66,14 @@ NetworkDeviceDiscovery::NetworkDeviceDiscovery(QObject *parent) :
             finishDiscovery();
         }
     });
+
+    m_monitorTimer = new QTimer(this);
+    m_monitorTimer->setInterval(5000);
+    m_monitorTimer->setSingleShot(false);
+    connect(m_monitorTimer, &QTimer::timeout, this, [=](){
+        evaluateMonitors();
+    });
+
 
     if (!arpAvailable && !m_ping->available()) {
         qCWarning(dcNetworkDeviceDiscovery()) << "Network device discovery is not available on this system.";
@@ -118,18 +126,27 @@ NetworkDeviceMonitor *NetworkDeviceDiscovery::registerMonitor(const QString &mac
     // TODO: check if we have a NetworkDeviceInfo for this mac address
 
     NetworkDeviceMonitor *monitor = new NetworkDeviceMonitor(NetworkDeviceInfo(macAddress), this);
+    bool initRequired = m_monitors.isEmpty();
     m_monitors.insert(macAddress, monitor);
+    if (initRequired) {
+        m_monitorTimer->start();
+        evaluateMonitors();
+    }
+
     return monitor;
 }
 
 void NetworkDeviceDiscovery::unregisterMonitor(const QString &macAddress)
 {
-
+    if (m_monitors.contains(macAddress)) {
+        NetworkDeviceMonitor *monitor = m_monitors.take(macAddress);
+        monitor->deleteLater();
+    }
 }
 
 void NetworkDeviceDiscovery::unregisterMonitor(NetworkDeviceMonitor *networkDeviceMonitor)
 {
-
+    unregisterMonitor(networkDeviceMonitor->networkDeviceInfo().macAddress());
 }
 
 PingReply *NetworkDeviceDiscovery::ping(const QHostAddress &address)
@@ -271,7 +288,7 @@ void NetworkDeviceDiscovery::updateOrAddNetworkDeviceArp(const QNetworkInterface
     }
 }
 
-void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress)
+void NetworkDeviceDiscovery::onArpResponseReceived(const QNetworkInterface &interface, const QHostAddress &address, const QString &macAddress)
 {
     if (!m_currentReply) {
         qCDebug(dcNetworkDeviceDiscovery()) << "Received ARP reply from" << address.toString() << macAddress << "but there is no discovery running.";
@@ -288,5 +305,18 @@ void NetworkDeviceDiscovery::onArpResponseRceived(const QNetworkInterface &inter
         });
     } else {
         updateOrAddNetworkDeviceArp(interface, address, macAddress);
+    }
+}
+
+void NetworkDeviceDiscovery::evaluateMonitors()
+{
+    foreach (NetworkDeviceMonitor *monitor, m_monitors) {
+        // Start action if we have not seen the device for gracePeriod seconds
+        const int gracePeriod = 60;
+        QDateTime currentDateTime = QDateTime::currentDateTime();
+        if (currentDateTime > monitor->lastSeen().addSecs(gracePeriod)) {
+            qCDebug(dcNetworkDeviceDiscovery()) << monitor << "requires refresh." << (currentDateTime.toMSecsSinceEpoch() - monitor->lastSeen().toMSecsSinceEpoch()) / 1000.0 << "s";
+
+        }
     }
 }
