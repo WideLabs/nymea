@@ -1,3 +1,14 @@
+nymea (1.0.1) jammy; urgency=medium
+
+  [ Michael Zanetti ]
+  * Add support for datetime objects to pluginStorage in python plugins
+  * Add support for listing and removing entries to PyPluginStorage
+  * Store the serveruuid as string
+  * Update air quality sensor interface names to be in line with other
+    sensors
+
+ -- jenkins <developer@nymea.io>  Wed, 30 Mar 2022 12:56:07 +0200
+
 nymea (1.0.0) xenial; urgency=medium
 
   [ Michael Zanetti ]
